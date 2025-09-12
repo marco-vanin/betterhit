@@ -24,10 +24,10 @@ const App = () => {
     // URLs de test avec différents cas
     const testUrls = [
       "https://hitster.com/fr/game/00296", // Chanson existante
-      "https://hitster.com/fr/game/99999", // Chanson inexistante 
+      "https://hitster.com/fr/game/99999", // Chanson inexistante
       "https://hitster.com/fr/game/12345", // Autre chanson inexistante
     ];
-    
+
     // Choisir une URL au hasard pour varier les tests
     const randomUrl = testUrls[Math.floor(Math.random() * testUrls.length)];
     const { hitsterId, songId } = parseHitsterUrl(randomUrl);
@@ -128,8 +128,8 @@ const App = () => {
       <div className="flex-1 flex items-center justify-center px-6">
         <div className="w-full max-w-md">
           {isFirstTime && !isScanning && !scanResult && (
-            <Welcome 
-              onStartScan={handleStartScan} 
+            <Welcome
+              onStartScan={handleStartScan}
               error={scanError}
               isSimulationMode={isSimulationMode}
               onToggleCamera={() => setForceRealCamera(!forceRealCamera)}

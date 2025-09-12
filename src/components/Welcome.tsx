@@ -5,13 +5,12 @@ interface WelcomeProps {
   readonly onToggleCamera?: () => void;
 }
 
-export const Welcome = ({ 
-  onStartScan, 
-  error, 
-  isSimulationMode = false, 
-  onToggleCamera 
+export const Welcome = ({
+  onStartScan,
+  error,
+  isSimulationMode = false,
+  onToggleCamera,
 }: WelcomeProps) => {
-  
   return (
     <div className="text-center space-y-8">
       <div>
@@ -20,10 +19,9 @@ export const Welcome = ({
           {isSimulationMode ? "Mode simulation" : "Prêt à scanner ?"}
         </h2>
         <p className="text-gray-500 text-sm">
-          {isSimulationMode 
+          {isSimulationMode
             ? "Simulation d'un scan Hitster (dev mode)"
-            : "Pointez votre caméra vers un QR code Hitster"
-          }
+            : "Pointez votre caméra vers un QR code Hitster"}
         </p>
       </div>
 
@@ -39,7 +37,7 @@ export const Welcome = ({
           {error}
         </div>
       )}
-      
+
       {isSimulationMode && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-yellow-800">
           💡 Mode développement : Pas besoin de caméra
