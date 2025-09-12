@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { extractYouTubeId } from "../utils/youtube";
 
 // Types pour l'API YouTube
@@ -24,48 +24,70 @@ interface MusicPlayerProps {
 export const MusicPlayer = ({ url }: MusicPlayerProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration] = useState(30); // Durée fixe de 30 secondes
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const playerRef = useRef<any>(null);
+  const intervalRef = useRef<number | null>(null);
   const youtubeId = extractYouTubeId(url);
+
+  const startTimer = useCallback(() => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    intervalRef.current = setInterval(() => {
+      if (playerRef.current && playerRef.current.getCurrentTime) {
+        const time = playerRef.current.getCurrentTime();
+        setCurrentTime(time);
+        // Arrêter après 30 secondes
+        if (time >= duration) {
+          playerRef.current.pauseVideo();
+        }
+      }
+    }, 100);
+  }, [duration]);
+
+  const stopTimer = useCallback(() => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  }, []);
 
   useEffect(() => {
     if (!youtubeId) return;
 
     // Charger l'API YouTube Player
     if (!window.YT) {
-      const script = document.createElement('script');
-      script.src = 'https://www.youtube.com/iframe_api';
+      const script = document.createElement("script");
+      script.src = "https://www.youtube.com/iframe_api";
       document.body.appendChild(script);
     }
 
     // Initialiser le player
     const initPlayer = () => {
-      playerRef.current = new window.YT.Player('youtube-player-hidden', {
-        height: '1',
-        width: '1',
+      playerRef.current = new window.YT.Player("youtube-player-hidden", {
+        height: "1",
+        width: "1",
         videoId: youtubeId,
         playerVars: {
-          autoplay: 1,
+          autoplay: 0,
           controls: 0,
           showinfo: 0,
           rel: 0,
           modestbranding: 1,
-          loop: 1,
-          playlist: youtubeId
         },
         events: {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          onReady: (event: any) => {
+          onReady: () => {
             setIsLoaded(true);
-            event.target.playVideo();
-            setIsPlaying(true);
           },
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           onStateChange: (event: any) => {
             if (event.data === window.YT.PlayerState.PLAYING) {
               setIsPlaying(true);
+              startTimer();
             } else if (event.data === window.YT.PlayerState.PAUSED) {
               setIsPlaying(false);
+              stopTimer();
             }
           },
         },
@@ -82,17 +104,38 @@ export const MusicPlayer = ({ url }: MusicPlayerProps) => {
       if (playerRef.current && playerRef.current.destroy) {
         playerRef.current.destroy();
       }
+      stopTimer();
     };
-  }, [youtubeId]);
+  }, [youtubeId, startTimer, stopTimer]);
 
   const togglePlayPause = () => {
     if (!playerRef.current) return;
-    
+
     if (isPlaying) {
       playerRef.current.pauseVideo();
     } else {
       playerRef.current.playVideo();
     }
+  };
+
+  const seekBackward = () => {
+    if (!playerRef.current) return;
+    const newTime = Math.max(0, currentTime - 5); // Reculer de 5 secondes
+    playerRef.current.seekTo(newTime);
+    setCurrentTime(newTime);
+  };
+
+  const seekForward = () => {
+    if (!playerRef.current) return;
+    const newTime = Math.min(duration, currentTime + 5); // Avancer de 5 secondes
+    playerRef.current.seekTo(newTime);
+    setCurrentTime(newTime);
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
   if (!youtubeId) {
@@ -107,85 +150,79 @@ export const MusicPlayer = ({ url }: MusicPlayerProps) => {
   return (
     <div className="space-y-4">
       {/* Player YouTube caché mais fonctionnel */}
-      <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
+      <div style={{ position: "absolute", left: "-9999px", top: "-9999px" }}>
         <div id="youtube-player-hidden"></div>
       </div>
 
-      {/* Interface visuelle principale */}
-      <div className="bg-gradient-to-br from-blue-900 to-purple-900 rounded-lg p-8 text-center text-white relative overflow-hidden">
-        {/* Animation de lecture */}
-        <div className="text-6xl mb-6 relative z-10">
+      {/* Interface du lecteur simplifiée */}
+      <div className="bg-gradient-to-br from-blue-900 to-purple-900 rounded-lg p-6 text-center text-white">
+        {/* Icône et status */}
+        <div className="text-5xl mb-4">
           {!isLoaded ? "⏳" : isPlaying ? "🎵" : "⏸️"}
         </div>
-        
-        {/* Status */}
-        <div className="mb-6 relative z-10">
-          <h2 className="text-xl font-medium mb-2">
-            {!isLoaded ? "Chargement..." : isPlaying ? "🎵 En cours de lecture" : "⏸️ En pause"}
-          </h2>
-          <p className="text-blue-200 text-sm">
-            Lecteur audio intégré • Contrôlable depuis l'app
-          </p>
-        </div>
 
-        {/* Visualiseur audio animé */}
+        <h3 className="text-lg font-medium mb-4">
+          {!isLoaded
+            ? "Chargement..."
+            : isPlaying
+            ? "En cours de lecture"
+            : "En pause"}
+        </h3>
+
+        {/* Barre de progression */}
         {isLoaded && (
-          <div className="flex justify-center items-end gap-1 mb-6 h-12 relative z-10">
-            {Array.from({length: 12}).map((_, i) => (
+          <div className="mb-6">
+            <div className="bg-white bg-opacity-20 rounded-full h-2 mb-2">
               <div
-                key={i}
-                className={`bg-white rounded-full w-2 transition-all duration-300 ${
-                  isPlaying ? 'animate-pulse bg-opacity-70' : 'bg-opacity-30'
-                }`}
-                style={{
-                  height: isPlaying ? `${20 + Math.sin(Date.now() * 0.005 + i) * 15}px` : '8px',
-                  animationDelay: `${i * 0.1}s`,
-                  animationDuration: isPlaying ? '0.8s' : '0s'
-                }}
+                className="bg-white rounded-full h-2 transition-all duration-100"
+                style={{ width: `${(currentTime / duration) * 100}%` }}
               />
-            ))}
+            </div>
+            <div className="flex justify-between text-xs text-blue-200">
+              <span>{formatTime(currentTime)}</span>
+              <span>30 sec max</span>
+            </div>
           </div>
         )}
 
-        {/* Contrôles de lecture */}
+        {/* Contrôles */}
         {isLoaded && (
-          <div className="flex justify-center gap-4 relative z-10">
+          <div className="flex justify-center items-center gap-4">
+            {/* Reculer */}
+            <button
+              onClick={seekBackward}
+              className="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full p-3 transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50"
+              title="Reculer de 5 secondes"
+            >
+              <span className="text-xl">⏪</span>
+            </button>
+
+            {/* Play/Pause */}
             <button
               onClick={togglePlayPause}
               className="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full p-4 transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50"
             >
-              <span className="text-3xl">
-                {isPlaying ? "⏸️" : "▶️"}
-              </span>
+              <span className="text-2xl">{isPlaying ? "⏸️" : "▶️"}</span>
+            </button>
+
+            {/* Avancer */}
+            <button
+              onClick={seekForward}
+              className="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full p-3 transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50"
+              title="Avancer de 5 secondes"
+            >
+              <span className="text-xl">⏩</span>
             </button>
           </div>
         )}
 
         {/* Info */}
-        <div className="text-xs text-blue-200 opacity-75 relative z-10 mt-4">
-          {isLoaded ? "🎵 Lecteur prêt" : "💡 Chargement du lecteur YouTube..."}
+        <div className="text-xs text-blue-200 opacity-75 mt-4">
+          {isLoaded
+            ? `🎵 Lecteur limité à ${duration} secondes`
+            : "💡 Chargement du lecteur..."}
         </div>
       </div>
-
-      {/* Lecteur de secours visible */}
-      <details className="bg-gray-50 rounded-lg overflow-hidden">
-        <summary className="p-4 cursor-pointer text-sm text-gray-600 hover:bg-gray-100">
-          🎬 Afficher le lecteur YouTube (secours)
-        </summary>
-        <div className="p-4 pt-0">
-          <div className="aspect-video">
-            <iframe
-              width="100%"
-              height="100%"
-              src={`https://www.youtube.com/embed/${youtubeId}?controls=1&rel=0`}
-              title="YouTube Player"
-              allow="autoplay; encrypted-media"
-              allowFullScreen
-              className="rounded-lg"
-            />
-          </div>
-        </div>
-      </details>
     </div>
   );
 };

@@ -21,23 +21,17 @@ const App = () => {
   const isSimulationMode = import.meta.env.DEV && !forceRealCamera;
 
   const simulateScan = useCallback(() => {
-    // URLs de test avec différents cas
-    const testUrls = [
-      "https://hitster.com/fr/game/00296", // Chanson existante
-      "https://hitster.com/fr/game/99999", // Chanson inexistante
-      "https://hitster.com/fr/game/12345", // Autre chanson inexistante
-    ];
+    // URL de test avec la chanson existante dans songs.json
+    const testUrl = "https://hitster.com/fr/game/00296"; // Chanson existante
 
-    // Choisir une URL au hasard pour varier les tests
-    const randomUrl = testUrls[Math.floor(Math.random() * testUrls.length)];
-    const { hitsterId, songId } = parseHitsterUrl(randomUrl);
+    const { hitsterId, songId } = parseHitsterUrl(testUrl);
     const song = songId ? findSong(songId) : null;
 
     setScanResult({
       song,
       songId,
       hitsterId,
-      scannedUrl: randomUrl,
+      scannedUrl: testUrl,
       error: null,
     });
 
