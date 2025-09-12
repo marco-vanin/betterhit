@@ -78,15 +78,11 @@ const App = () => {
     }
   }, [startScanner, simulateScan, isSimulationMode]);
 
-  const handleNewScan = useCallback(async () => {
+  const handleBackToScan = useCallback(() => {
     setScanResult(null);
     setShowSongDetails(false);
-    if (isSimulationMode) {
-      simulateScan();
-    } else {
-      await startScanner();
-    }
-  }, [startScanner, simulateScan, isSimulationMode]);
+    setIsFirstTime(true);
+  }, []);
 
   if (dbLoading) {
     return (
@@ -126,24 +122,30 @@ const App = () => {
       </div>
 
       <div className="flex-1 flex items-center justify-center px-6">
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-2xl">
           {isFirstTime && !isScanning && !scanResult && (
-            <Welcome
-              onStartScan={handleStartScan}
-              error={scanError}
-              isSimulationMode={isSimulationMode}
-              onToggleCamera={() => setForceRealCamera(!forceRealCamera)}
-            />
+            <div className="max-w-md mx-auto">
+              <Welcome
+                onStartScan={handleStartScan}
+                error={scanError}
+                isSimulationMode={isSimulationMode}
+                onToggleCamera={() => setForceRealCamera(!forceRealCamera)}
+              />
+            </div>
           )}
 
-          {isScanning && <Scanner readerId={READER_ID} onStop={stopScanner} />}
+          {isScanning && (
+            <div className="max-w-md mx-auto">
+              <Scanner readerId={READER_ID} onStop={stopScanner} />
+            </div>
+          )}
 
           {!isFirstTime && !isScanning && scanResult && (
             <Result
               result={scanResult}
               showDetails={showSongDetails}
               onToggleDetails={() => setShowSongDetails(!showSongDetails)}
-              onNewScan={handleNewScan}
+              onBackToScan={handleBackToScan}
             />
           )}
         </div>
