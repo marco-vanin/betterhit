@@ -1,18 +1,18 @@
 export interface Song {
-  title: string;
-  artist: string;
-  year: number;
-  url: string;
+  readonly title: string;
+  readonly artist: string;
+  readonly year: number;
+  readonly url: string;
 }
 
 export interface SongsDatabase {
-  [key: string]: Song;
+  readonly [key: string]: Song;
 }
 
 export interface ScanResult {
-  song: Song | null;
-  songId: string | null;
-  error: string | null;
-  scannedUrl?: string;
-  hitsterId?: string | null;
+  readonly song: Song | null;
+  readonly songId: string | null;
+  readonly error: string | null;
+  readonly scannedUrl?: string;
+  readonly hitsterId?: string | null;
 }

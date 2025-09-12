@@ -77,13 +77,6 @@ export const useQRScanner = ({
         false
       );
 
-      scanner.render(onScanSuccess, (err) => {
-        // Only log critical errors to avoid spam
-        if (err.includes("NotAllowedError") || err.includes("NotFoundError")) {
-          console.error("QR Scanner error:", err);
-        }
-      });
-
       // Wrapper pour arrêter automatiquement le scanner après un scan réussi
       const wrappedOnSuccess: QrcodeSuccessCallback = (
         decodedText,
