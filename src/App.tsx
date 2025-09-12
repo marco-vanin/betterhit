@@ -13,8 +13,37 @@ const App = () => {
   const [scanResult, setScanResult] = useState<ScanResultType | null>(null);
   const [isFirstTime, setIsFirstTime] = useState(true);
   const [showSongDetails, setShowSongDetails] = useState(false);
+  const [forceRealCamera, setForceRealCamera] = useState(false);
 
   const { findSong, loading: dbLoading, error: dbError } = useSongsDatabase();
+
+  // Mode simulation pour le développement (sauf si forcé)
+  const isSimulationMode = import.meta.env.DEV && !forceRealCamera;
+
+  const simulateScan = useCallback(() => {
+    // URLs de test avec différents cas
+    const testUrls = [
+      "https://hitster.com/fr/game/00296", // Chanson existante
+      "https://hitster.com/fr/game/99999", // Chanson inexistante 
+      "https://hitster.com/fr/game/12345", // Autre chanson inexistante
+    ];
+    
+    // Choisir une URL au hasard pour varier les tests
+    const randomUrl = testUrls[Math.floor(Math.random() * testUrls.length)];
+    const { hitsterId, songId } = parseHitsterUrl(randomUrl);
+    const song = songId ? findSong(songId) : null;
+
+    setScanResult({
+      song,
+      songId,
+      hitsterId,
+      scannedUrl: randomUrl,
+      error: null,
+    });
+
+    setIsFirstTime(false);
+    setShowSongDetails(false);
+  }, [findSong]);
 
   const {
     isScanning,
@@ -41,14 +70,23 @@ const App = () => {
   });
 
   const handleStartScan = useCallback(async () => {
-    await startScanner();
-  }, [startScanner]);
+    if (isSimulationMode) {
+      // En mode dev, simule directement
+      simulateScan();
+    } else {
+      await startScanner();
+    }
+  }, [startScanner, simulateScan, isSimulationMode]);
 
   const handleNewScan = useCallback(async () => {
     setScanResult(null);
     setShowSongDetails(false);
-    await startScanner();
-  }, [startScanner]);
+    if (isSimulationMode) {
+      simulateScan();
+    } else {
+      await startScanner();
+    }
+  }, [startScanner, simulateScan, isSimulationMode]);
 
   if (dbLoading) {
     return (
@@ -90,7 +128,12 @@ const App = () => {
       <div className="flex-1 flex items-center justify-center px-6">
         <div className="w-full max-w-md">
           {isFirstTime && !isScanning && !scanResult && (
-            <Welcome onStartScan={handleStartScan} error={scanError} />
+            <Welcome 
+              onStartScan={handleStartScan} 
+              error={scanError}
+              isSimulationMode={isSimulationMode}
+              onToggleCamera={() => setForceRealCamera(!forceRealCamera)}
+            />
           )}
 
           {isScanning && <Scanner readerId={READER_ID} onStop={stopScanner} />}
