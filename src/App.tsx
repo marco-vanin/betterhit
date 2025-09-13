@@ -17,8 +17,8 @@ const App = () => {
 
   const { findSong, loading: dbLoading, error: dbError } = useSongsDatabase();
 
-  // Mode simulation pour le développement (sauf si forcé)
-  const isSimulationMode = import.meta.env.DEV && !forceRealCamera;
+  // Mode simulation pour le développement (sauf si forcé) + mode debug temporaire
+  const isSimulationMode = (import.meta.env.DEV && !forceRealCamera) || window.location.search.includes('debug=true');
 
   const simulateScan = useCallback(() => {
     // URL de test avec la chanson existante dans songs.json

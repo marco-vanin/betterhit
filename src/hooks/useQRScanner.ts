@@ -27,13 +27,20 @@ export const useQRScanner = ({
   const scannerRef = useRef<Html5QrcodeScanner | null>(null);
 
   const checkCameraPermissions = async (): Promise<void> => {
+    console.log('🎥 Checking camera permissions...');
+    
     if (!navigator.mediaDevices?.getUserMedia) {
+      console.error('❌ Camera API not supported');
       throw new Error("Camera not supported by this browser");
     }
 
     try {
-      await navigator.mediaDevices.getUserMedia({ video: true });
-    } catch {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      console.log('✅ Camera permissions granted');
+      // Fermer le stream de test
+      stream.getTracks().forEach(track => track.stop());
+    } catch (err) {
+      console.error('❌ Camera access denied:', err);
       throw new Error("Camera access denied. Please allow camera permissions.");
     }
   };
