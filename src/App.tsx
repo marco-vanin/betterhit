@@ -109,8 +109,13 @@ const App = () => {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <div className="pt-8 pb-6 text-center">
-        <div className="w-16 h-16 mx-auto mb-4 bg-blue-500 rounded-full flex items-center justify-center">
-          <span className="text-2xl text-white">�</span>
+        <div className="w-16 h-16 mx-auto mb-4 relative">
+          {/* Logo avec une icône musicale propre */}
+          <img 
+            src="/icons/android/android-launchericon-96-96.png" 
+            alt="Hitster Helper Logo"
+            className="w-full h-full rounded-2xl shadow-lg"
+          />
         </div>
         <h1 className="text-2xl font-light text-gray-900">Hitster Helper</h1>
       </div>
