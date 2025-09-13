@@ -53,7 +53,12 @@
       "short_name": "Scan",
       "description": "Scanner un QR code Hitster directement",
       "url": "/?action=scan",
-      "icons": [{ "src": "icons/android/android-launchericon-192-192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "icons/android/android-launchericon-192-192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ]
 }

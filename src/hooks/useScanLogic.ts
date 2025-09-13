@@ -1,8 +1,8 @@
-import { useCallback } from 'react';
-import { useSongsDatabase } from './useSongsDatabase';
-import { parseHitsterUrl } from '../utils/hitster';
-import { TEST_URLS } from '../config/constants';
-import type { ScanResult, Song } from '../types';
+import { useCallback } from "react";
+import { useSongsDatabase } from "./useSongsDatabase";
+import { parseHitsterUrl } from "../utils/hitster";
+import { TEST_URLS } from "../config/constants";
+import type { ScanResult, Song } from "../types";
 
 interface UseScanLogicReturn {
   findSong: (songId: string) => Song | null;
@@ -18,18 +18,21 @@ interface UseScanLogicReturn {
 export const useScanLogic = (): UseScanLogicReturn => {
   const { findSong, loading, error } = useSongsDatabase();
 
-  const processScanResult = useCallback((scannedUrl: string): ScanResult => {
-    const { hitsterId, songId } = parseHitsterUrl(scannedUrl);
-    const song = songId ? findSong(songId) : null;
+  const processScanResult = useCallback(
+    (scannedUrl: string): ScanResult => {
+      const { hitsterId, songId } = parseHitsterUrl(scannedUrl);
+      const song = songId ? findSong(songId) : null;
 
-    return {
-      song,
-      songId,
-      hitsterId,
-      scannedUrl,
-      error: null,
-    };
-  }, [findSong]);
+      return {
+        song,
+        songId,
+        hitsterId,
+        scannedUrl,
+        error: null,
+      };
+    },
+    [findSong]
+  );
 
   const getTestScanResult = useCallback((): ScanResult => {
     return processScanResult(TEST_URLS.VALID_SONG);

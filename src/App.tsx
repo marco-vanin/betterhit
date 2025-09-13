@@ -111,8 +111,8 @@ const App = () => {
       <div className="pt-8 pb-6 text-center">
         <div className="w-16 h-16 mx-auto mb-4 relative">
           {/* Logo avec une icône musicale propre */}
-          <img 
-            src="/icons/android/android-launchericon-96-96.png" 
+          <img
+            src="/icons/android/android-launchericon-96-96.png"
             alt="Hitster Helper Logo"
             className="w-full h-full rounded-2xl shadow-lg"
           />
