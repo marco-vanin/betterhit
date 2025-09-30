@@ -21,18 +21,23 @@ export const useSongsDatabase = (): UseSongsDatabaseReturn => {
   useEffect(() => {
     const loadSongs = async (): Promise<void> => {
       try {
+        console.log("🎵 Loading songs from:", PATHS.SONGS_DATABASE);
         const response = await fetch(PATHS.SONGS_DATABASE);
 
         if (!response.ok) {
-          throw new Error(`Failed to load songs: ${response.statusText}`);
+          throw new Error(
+            `Failed to load songs: ${response.status} ${response.statusText}`
+          );
         }
 
         const data: SongsDatabase = await response.json();
+        console.log("✅ Songs loaded:", Object.keys(data).length, "songs");
         setSongs(data);
         setError(null);
       } catch (err) {
         const message =
           err instanceof Error ? err.message : "Unknown error occurred";
+        console.error("❌ Error loading songs:", message);
         setError(message);
       } finally {
         setLoading(false);

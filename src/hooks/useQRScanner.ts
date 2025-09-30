@@ -28,20 +28,43 @@ export const useQRScanner = ({
 
   const checkCameraPermissions = async (): Promise<void> => {
     console.log("🎥 Checking camera permissions...");
+    console.log("🌐 Protocol:", window.location.protocol);
+    console.log("📱 User agent:", navigator.userAgent);
 
     if (!navigator.mediaDevices?.getUserMedia) {
       console.error("❌ Camera API not supported");
       throw new Error("Camera not supported by this browser");
     }
 
+    // Vérifier si on est en HTTPS (requis pour la caméra sur mobile)
+    if (
+      window.location.protocol !== "https:" &&
+      window.location.hostname !== "localhost"
+    ) {
+      console.error("❌ HTTPS required for camera access");
+      throw new Error("HTTPS is required for camera access on this device");
+    }
+
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: "environment",
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
+      });
       console.log("✅ Camera permissions granted");
+      console.log("📹 Video tracks:", stream.getVideoTracks().length);
       // Fermer le stream de test
-      stream.getTracks().forEach((track) => track.stop());
+      stream.getTracks().forEach((track) => {
+        console.log("🔒 Stopping track:", track.label);
+        track.stop();
+      });
     } catch (err) {
       console.error("❌ Camera access denied:", err);
-      throw new Error("Camera access denied. Please allow camera permissions.");
+      throw new Error(
+        "Camera access denied. Please allow camera permissions and ensure HTTPS."
+      );
     }
   };
 
@@ -76,10 +99,29 @@ export const useQRScanner = ({
         readerId,
         {
           fps: 10,
-          qrbox: { width: 250, height: 250 },
+          // Adapter la taille selon la largeur de l'écran - forcer une taille plus grande
+          qrbox: function (_viewfinderWidth, _viewfinderHeight) {
+            // Utiliser des tailles plus agressives pour forcer l'affichage
+            if (window.innerWidth <= 340) {
+              return { width: 270, height: 270 }; // Presque toute la taille
+            } else if (window.innerWidth <= 400) {
+              return { width: 290, height: 290 };
+            } else {
+              return { width: 340, height: 340 }; // Presque toute la taille du conteneur
+            }
+          },
           aspectRatio: 1.0,
           rememberLastUsedCamera: true,
+          showTorchButtonIfSupported: true,
+          // Forcer une résolution plus élevée pour la caméra
+          videoConstraints: {
+            facingMode: "environment",
+            width: { ideal: 1280, min: 640 },
+            height: { ideal: 720, min: 480 },
+          },
           supportedScanTypes: [],
+          // Désactiver le redimensionnement automatique
+          disableFlip: false,
         },
         false
       );
@@ -113,6 +155,71 @@ export const useQRScanner = ({
           console.error("QR Scanner error:", err);
         }
       });
+
+      // Fonction pour forcer la taille de manière agressive
+      const forceScannerSize = () => {
+        const readerElement = document.getElementById(readerId);
+        if (!readerElement) return false;
+
+        const video = readerElement.querySelector("video");
+        const canvas = readerElement.querySelector("canvas");
+        const allDivs = readerElement.querySelectorAll("div");
+
+        const size =
+          window.innerWidth <= 340
+            ? "280px"
+            : window.innerWidth <= 400
+            ? "300px"
+            : "350px";
+
+        let foundElements = false;
+
+        // Forcer la taille de tous les éléments trouvés
+        [video, canvas, ...allDivs].forEach((element) => {
+          if (element && element instanceof HTMLElement) {
+            element.style.setProperty("width", size, "important");
+            element.style.setProperty("height", size, "important");
+            element.style.setProperty("max-width", size, "important");
+            element.style.setProperty("max-height", size, "important");
+            element.style.setProperty("min-width", size, "important");
+            element.style.setProperty("min-height", size, "important");
+            if (element.tagName === "VIDEO") {
+              element.style.setProperty("object-fit", "cover", "important");
+            }
+            foundElements = true;
+          }
+        });
+
+        // Forcer la taille du conteneur principal
+        if (readerElement instanceof HTMLElement) {
+          readerElement.style.setProperty("width", size, "important");
+          readerElement.style.setProperty("height", size, "important");
+        }
+
+        return foundElements;
+      };
+
+      // Polling agressif pour s'assurer que la taille est appliquée
+      let attempts = 0;
+      const maxAttempts = 50; // 5 secondes max
+
+      const pollForElements = () => {
+        attempts++;
+        const success = forceScannerSize();
+
+        if (!success && attempts < maxAttempts) {
+          setTimeout(pollForElements, 100);
+        } else if (success) {
+          console.log("✅ Scanner size forced successfully");
+          // Continuer à surveiller les changements
+          setTimeout(forceScannerSize, 500);
+          setTimeout(forceScannerSize, 1000);
+          setTimeout(forceScannerSize, 2000);
+        }
+      };
+
+      // Démarrer le polling
+      setTimeout(pollForElements, 50);
 
       scannerRef.current = scanner;
     } catch (err) {

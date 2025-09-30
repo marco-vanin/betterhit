@@ -1,9 +1,15 @@
+import { ErrorDisplay } from "./ErrorDisplay";
+
 interface WelcomeProps {
   readonly onStartScan: () => void;
   readonly error: string | null;
 }
 
 export const Welcome = ({ onStartScan, error }: WelcomeProps) => {
+  if (error) {
+    return <ErrorDisplay error={error} onRetry={onStartScan} />;
+  }
+
   return (
     <div className="text-center space-y-8">
       <div>
@@ -22,13 +28,6 @@ export const Welcome = ({ onStartScan, error }: WelcomeProps) => {
       >
         Commencer le scan
       </button>
-
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-red-700">
-          <div className="font-medium mb-2">❌ Erreur de scan</div>
-          <div>{error}</div>
-        </div>
-      )}
     </div>
   );
 };

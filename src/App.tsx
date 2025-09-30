@@ -39,6 +39,15 @@ const App = () => {
     readerId: READER_ID,
   });
 
+  // Debug logs
+  console.log("🎮 App state:", {
+    isFirstTime,
+    isScanning,
+    scanResult: !!scanResult,
+    dbLoading,
+    dbError,
+  });
+
   const handleStartScan = useCallback(async () => {
     await startScanner();
   }, [startScanner]);
@@ -79,8 +88,12 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <div className="pt-8 pb-6 text-center">
-        <div className="w-16 h-16 mx-auto mb-4 relative">
+      <div className={`text-center ${isScanning ? "pt-4 pb-2" : "pt-8 pb-6"}`}>
+        <div
+          className={`mx-auto mb-2 relative ${
+            isScanning ? "w-12 h-12" : "w-16 h-16 mb-4"
+          }`}
+        >
           {/* Logo avec une icône musicale propre */}
           <img
             src="/icons/android/android-launchericon-96-96.png"
@@ -88,7 +101,9 @@ const App = () => {
             className="w-full h-full rounded-2xl shadow-lg"
           />
         </div>
-        <h1 className="text-2xl font-light text-gray-900">Hitster Helper</h1>
+        {!isScanning && (
+          <h1 className="text-2xl font-light text-gray-900">Hitster Helper</h1>
+        )}
       </div>
 
       <div className="flex-1 flex items-center justify-center px-6">
@@ -100,7 +115,7 @@ const App = () => {
           )}
 
           {isScanning && (
-            <div className="max-w-md mx-auto">
+            <div className="w-full">
               <Scanner readerId={READER_ID} onStop={stopScanner} />
             </div>
           )}
