@@ -13,31 +13,7 @@ const App = () => {
   const [scanResult, setScanResult] = useState<ScanResultType | null>(null);
   const [isFirstTime, setIsFirstTime] = useState(true);
   const [showSongDetails, setShowSongDetails] = useState(false);
-  const [forceRealCamera, setForceRealCamera] = useState(false);
-
   const { findSong, loading: dbLoading, error: dbError } = useSongsDatabase();
-
-  // Mode simulation pour le développement (sauf si forcé) + mode debug temporaire
-  const isSimulationMode = (import.meta.env.DEV && !forceRealCamera) || window.location.search.includes('debug=true');
-
-  const simulateScan = useCallback(() => {
-    // URL de test avec la chanson existante dans songs.json
-    const testUrl = "https://hitster.com/fr/game/00296"; // Chanson existante
-
-    const { hitsterId, songId } = parseHitsterUrl(testUrl);
-    const song = songId ? findSong(songId) : null;
-
-    setScanResult({
-      song,
-      songId,
-      hitsterId,
-      scannedUrl: testUrl,
-      error: null,
-    });
-
-    setIsFirstTime(false);
-    setShowSongDetails(false);
-  }, [findSong]);
 
   const {
     isScanning,
@@ -64,13 +40,8 @@ const App = () => {
   });
 
   const handleStartScan = useCallback(async () => {
-    if (isSimulationMode) {
-      // En mode dev, simule directement
-      simulateScan();
-    } else {
-      await startScanner();
-    }
-  }, [startScanner, simulateScan, isSimulationMode]);
+    await startScanner();
+  }, [startScanner]);
 
   const handleBackToScan = useCallback(() => {
     setScanResult(null);
@@ -127,8 +98,6 @@ const App = () => {
               <Welcome
                 onStartScan={handleStartScan}
                 error={scanError}
-                isSimulationMode={isSimulationMode}
-                onToggleCamera={() => setForceRealCamera(!forceRealCamera)}
               />
             </div>
           )}

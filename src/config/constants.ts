@@ -8,7 +8,7 @@ export const APP_CONFIG = {
 
 // URLs et chemins
 export const PATHS = {
-  SONGS_DATABASE: "/songs.json",
+  SONGS_DATABASE: "/songs/french/summer-party.json",
   YOUTUBE_IFRAME_API: "https://www.youtube.com/iframe_api",
 } as const;
 
@@ -22,9 +22,4 @@ export const ERROR_MESSAGES = {
   ELEMENT_NOT_FOUND: (id: string) => `Element #${id} not found`,
 } as const;
 
-// Test URLs pour le développement
-export const TEST_URLS = {
-  VALID_SONG: "https://hitster.com/fr/game/00296",
-  INVALID_SONG_1: "https://hitster.com/fr/game/99999",
-  INVALID_SONG_2: "https://hitster.com/fr/game/12345",
-} as const;
+

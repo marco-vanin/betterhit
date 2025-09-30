@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { PATHS } from "../config/constants";
 import type { Song, SongsDatabase } from "../types";
 
 interface UseSongsDatabaseReturn {
@@ -20,7 +21,7 @@ export const useSongsDatabase = (): UseSongsDatabaseReturn => {
   useEffect(() => {
     const loadSongs = async (): Promise<void> => {
       try {
-        const response = await fetch("/songs.json");
+        const response = await fetch(PATHS.SONGS_DATABASE);
 
         if (!response.ok) {
           throw new Error(`Failed to load songs: ${response.statusText}`);

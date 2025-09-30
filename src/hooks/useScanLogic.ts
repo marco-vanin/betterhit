@@ -1,13 +1,11 @@
 import { useCallback } from "react";
 import { useSongsDatabase } from "./useSongsDatabase";
 import { parseHitsterUrl } from "../utils/hitster";
-import { TEST_URLS } from "../config/constants";
 import type { ScanResult, Song } from "../types";
 
 interface UseScanLogicReturn {
   findSong: (songId: string) => Song | null;
   processScanResult: (scannedUrl: string) => ScanResult;
-  getTestScanResult: () => ScanResult;
   loading: boolean;
   error: string | null;
 }
@@ -34,14 +32,9 @@ export const useScanLogic = (): UseScanLogicReturn => {
     [findSong]
   );
 
-  const getTestScanResult = useCallback((): ScanResult => {
-    return processScanResult(TEST_URLS.VALID_SONG);
-  }, [processScanResult]);
-
   return {
     findSong,
     processScanResult,
-    getTestScanResult,
     loading,
     error,
   };
