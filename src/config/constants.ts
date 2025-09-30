@@ -21,5 +21,3 @@ export const ERROR_MESSAGES = {
   SONGS_LOAD_FAILED: "Failed to load songs database",
   ELEMENT_NOT_FOUND: (id: string) => `Element #${id} not found`,
 } as const;
-
-

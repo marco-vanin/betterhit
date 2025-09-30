@@ -3,10 +3,7 @@ interface WelcomeProps {
   readonly error: string | null;
 }
 
-export const Welcome = ({
-  onStartScan,
-  error,
-}: WelcomeProps) => {
+export const Welcome = ({ onStartScan, error }: WelcomeProps) => {
   return (
     <div className="text-center space-y-8">
       <div>

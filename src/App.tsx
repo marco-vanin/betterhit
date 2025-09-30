@@ -95,10 +95,7 @@ const App = () => {
         <div className="w-full max-w-2xl">
           {isFirstTime && !isScanning && !scanResult && (
             <div className="max-w-md mx-auto">
-              <Welcome
-                onStartScan={handleStartScan}
-                error={scanError}
-              />
+              <Welcome onStartScan={handleStartScan} error={scanError} />
             </div>
           )}
 
